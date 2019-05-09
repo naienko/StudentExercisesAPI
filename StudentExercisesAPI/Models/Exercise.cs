@@ -1,9 +1,15 @@
-﻿namespace StudentExercisesAPI.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace StudentExercisesAPI.Models
 {
     public class Exercise
     {
         public int Id { get; set; }
+        [Required]
+        [StringLength(25, MinimumLength = 2)]
         public string Title { get; set; }
+        [Required]
+        [StringLength(25, MinimumLength = 2)]
         public string Language { get; set; }
     }
 }
