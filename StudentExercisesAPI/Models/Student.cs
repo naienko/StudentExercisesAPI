@@ -7,16 +7,12 @@ namespace StudentExercisesAPI.Models
     {
         public int Id { get; set; }
         [Required]
-        [StringLength(25, MinimumLength = 2)]
         public string _firstname { get; set; }
         [Required]
-        [StringLength(25, MinimumLength = 2)]
         public string _lastname { get; set; }
         [Required]
-        [StringLength(25, MinimumLength = 2)]
+        [StringLength(12, MinimumLength = 3)]
         public string _handle { get; set; }
-        [Required]
-        [StringLength(25, MinimumLength = 2)]
         public int _cohortId { get; set; }
         public Cohort _cohort;
 

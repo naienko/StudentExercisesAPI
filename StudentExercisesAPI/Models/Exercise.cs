@@ -6,10 +6,8 @@ namespace StudentExercisesAPI.Models
     {
         public int Id { get; set; }
         [Required]
-        [StringLength(25, MinimumLength = 2)]
         public string Title { get; set; }
         [Required]
-        [StringLength(25, MinimumLength = 2)]
         public string Language { get; set; }
     }
 }
