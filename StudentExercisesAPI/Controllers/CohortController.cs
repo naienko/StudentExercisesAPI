@@ -45,63 +45,57 @@ namespace StudentExercisesAPI.Controllers
                             JOIN Student s ON c.Id = s.CohortId
                             JOIN Instructor i ON c.Id = i.CohortId";
                     SqlDataReader reader = cmd.ExecuteReader();
+
                     List<Cohort> cohorts = new List<Cohort>();
+
+                    Dictionary<int, Cohort> cohortHash = new Dictionary<int, Cohort>();
+                    Dictionary<int, Student> studentHash = new Dictionary<int, Student>();
+                    Dictionary<int, Instructor> instructorHash = new Dictionary<int, Instructor>();
 
                     while (reader.Read())
                     {
-                        int Id = reader.GetInt32(reader.GetOrdinal("CohortId"));
-                        Cohort cohort = new Cohort
-                        {
-                            Id = Id,
-                            Name = reader.GetString(reader.GetOrdinal("Designation"))
-                        };
+                        int cohortId = reader.GetInt32(reader.GetOrdinal("CohortId"));
+                        int studentId = reader.GetInt32(reader.GetOrdinal("StudentId"));
+                        int instructorId = reader.GetInt32(reader.GetOrdinal("InstructorId"));
 
-                        Student student = new Student
+                        if (!cohortHash.ContainsKey(cohortId))
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("StudentId")),
-                            _firstname = reader.GetString(reader.GetOrdinal("StudentFirstName")),
-                            _lastname = reader.GetString(reader.GetOrdinal("StudentLastName")),
-                            _handle = reader.GetString(reader.GetOrdinal("StudentSlack")),
-                            _cohortId = Id
-                        };
-
-                        Instructor instructor = new Instructor
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("InstructorId")),
-                            _firstname = reader.GetString(reader.GetOrdinal("InstructorFirstName")),
-                            _lastname = reader.GetString(reader.GetOrdinal("InstructorLastName")),
-                            _handle = reader.GetString(reader.GetOrdinal("InstructorSlack")),
-                            _cohortId = Id
-                        };
-
-                        if (cohorts.Count != 0)
-                        {
-                            IEnumerable<Cohort> currentCohort = cohorts.Where(c => c.Id == Id);
-                            if (currentCohort.Any() == true)
+                            cohortHash[cohortId] = new Cohort
                             {
-                                foreach (Cohort c in currentCohort)
-                                {
-                                    if (c.Instructors.Count == 0)
-                                    {
-                                        c.Instructors.Add(instructor);
-                                    }
-                                    c.Students.Add(student);
-                                }
-                            }
-                            else
-                            {
-                                cohort.Students.Add(student);
-                                cohort.Instructors.Add(instructor);
-                                cohorts.Add(cohort);
-                            }
+                                Id = cohortId,
+                                Name = reader.GetString(reader.GetOrdinal("Designation"))
+                            };
                         }
-                        else
+
+                        if (!studentHash.ContainsKey(studentId))
                         {
-                            cohort.Students.Add(student);
-                            cohort.Instructors.Add(instructor);
-                            cohorts.Add(cohort);
+                            Student student = new Student
+                            {
+                                Id = studentId,
+                                _firstname = reader.GetString(reader.GetOrdinal("StudentFirstName")),
+                                _lastname = reader.GetString(reader.GetOrdinal("StudentLastName")),
+                                _handle = reader.GetString(reader.GetOrdinal("StudentSlack")),
+                                _cohortId = cohortId
+                            };
+                            cohortHash[cohortId].Students.Add(student);
+                            studentHash[studentId] = student;
+                        }
+
+                        if (!instructorHash.ContainsKey(instructorId))
+                        {
+                            Instructor instructor = new Instructor
+                            {
+                                Id = instructorId,
+                                _firstname = reader.GetString(reader.GetOrdinal("InstructorFirstName")),
+                                _lastname = reader.GetString(reader.GetOrdinal("InstructorLastName")),
+                                _handle = reader.GetString(reader.GetOrdinal("InstructorSlack")),
+                                _cohortId = cohortId
+                            };
+                            cohortHash[cohortId].Instructors.Add(instructor);
+                            instructorHash[instructorId] = instructor;
                         }
                     }
+                    cohorts = cohortHash.Values.ToList();
                     reader.Close();
 
                     return Ok(cohorts);
@@ -127,35 +121,44 @@ namespace StudentExercisesAPI.Controllers
 
                     Cohort cohort = new Cohort();
 
+                    Dictionary<int, Student> studentHash = new Dictionary<int, Student>();
+                    Dictionary<int, Instructor> instructorHash = new Dictionary<int, Instructor>();
+
                     while (reader.Read())
                     {
-                        cohort.Id = reader.GetInt32(reader.GetOrdinal("CohortId"));
+                        int cohortId = reader.GetInt32(reader.GetOrdinal("CohortId"));
+                        int studentId = reader.GetInt32(reader.GetOrdinal("StudentId"));
+                        int instructorId = reader.GetInt32(reader.GetOrdinal("InstructorId"));
+
+                        cohort.Id = cohortId;
                         cohort.Name = reader.GetString(reader.GetOrdinal("Designation"));
 
-                        Student student = new Student
+                        if (!studentHash.ContainsKey(studentId))
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("StudentId")),
-                            _firstname = reader.GetString(reader.GetOrdinal("StudentFirstName")),
-                            _lastname = reader.GetString(reader.GetOrdinal("StudentLastName")),
-                            _handle = reader.GetString(reader.GetOrdinal("StudentSlack")),
-                            _cohortId = cohort.Id
-                        };
+                            studentHash[studentId] = new Student
+                            {
+                                Id = studentId,
+                                _firstname = reader.GetString(reader.GetOrdinal("StudentFirstName")),
+                                _lastname = reader.GetString(reader.GetOrdinal("StudentLastName")),
+                                _handle = reader.GetString(reader.GetOrdinal("StudentSlack")),
+                                _cohortId = cohortId
+                            };
+                        }
 
-                        Instructor instructor = new Instructor
+                        if (!instructorHash.ContainsKey(instructorId))
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("InstructorId")),
-                            _firstname = reader.GetString(reader.GetOrdinal("InstructorFirstName")),
-                            _lastname = reader.GetString(reader.GetOrdinal("InstructorLastName")),
-                            _handle = reader.GetString(reader.GetOrdinal("InstructorSlack")),
-                            _cohortId = cohort.Id
-                        };
-
-                        cohort.Students.Add(student);
-                        if (cohort.Instructors.Count == 0)
-                        {
-                            cohort.Instructors.Add(instructor);
+                            instructorHash[instructorId] = new Instructor
+                            {
+                                Id = instructorId,
+                                _firstname = reader.GetString(reader.GetOrdinal("InstructorFirstName")),
+                                _lastname = reader.GetString(reader.GetOrdinal("InstructorLastName")),
+                                _handle = reader.GetString(reader.GetOrdinal("InstructorSlack")),
+                                _cohortId = cohortId
+                            };
                         }
                     }
+                    cohort.Students = studentHash.Values.ToList();
+                    cohort.Instructors = instructorHash.Values.ToList();
                     reader.Close();
 
                     return Ok(cohort);
